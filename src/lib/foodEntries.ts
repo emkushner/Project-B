@@ -6,10 +6,10 @@ export type FoodEntryRow = {
   id: string;
   name: string;
   meal: MealType;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+  calories: number | string;
+  protein: number | string;
+  carbs: number | string;
+  fat: number | string;
   serving: string;
   created_at: string;
 };
@@ -64,10 +64,10 @@ export function mapRowToFoodEntry(row: FoodEntryRow): FoodEntry {
     name: row.name,
     meal: row.meal,
     serving: row.serving,
-    calories: row.calories,
-    protein: row.protein,
-    carbs: row.carbs,
-    fat: row.fat,
+    calories: toNumber(row.calories),
+    protein: toNumber(row.protein),
+    carbs: toNumber(row.carbs),
+    fat: toNumber(row.fat),
     createdAt: row.created_at
   };
 }
