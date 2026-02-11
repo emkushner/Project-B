@@ -1,0 +1,281 @@
+:root {
+  --bg: #f8faf7;
+  --bg-accent: #e8f0e6;
+  --card: #ffffff;
+  --line: #d7e1d4;
+  --text: #1f2a1d;
+  --muted: #586651;
+  --primary: #2e7d32;
+  --primary-dark: #1d5720;
+  --chip: #edf5eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top right, #eaf6df 0%, transparent 45%),
+    radial-gradient(circle at 10% 20%, #e6efe3 0%, transparent 35%),
+    var(--bg);
+  color: var(--text);
+}
+
+main.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.hero {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.05;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.stats article {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+}
+
+.stats h2 {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.stats p {
+  margin: 0.35rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.two-col {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0.45rem 0 0.85rem;
+}
+
+.quick-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quick-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--chip);
+  padding: 0.7rem 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.quick-item strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.quick-item small {
+  color: var(--muted);
+}
+
+.form {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.form label {
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.form input,
+.form select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.62rem 0.65rem;
+  font: inherit;
+  background: white;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+button {
+  font: inherit;
+}
+
+button.primary {
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+}
+
+button.primary:hover {
+  background: var(--primary-dark);
+}
+
+.entries .entries-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+button.ghost {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+button.ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.meal-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0 0.45rem;
+}
+
+.meal-group h3 span {
+  font-size: 0.75rem;
+  background: var(--chip);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  color: var(--muted);
+}
+
+.meal-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.meal-group li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.6rem 0.65rem;
+}
+
+.meal-group strong {
+  display: block;
+}
+
+.meal-group p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.entry-nutrition {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.meal-group li button {
+  border: 0;
+  background: transparent;
+  color: #8c2f2f;
+  cursor: pointer;
+}
+
+.empty {
+  color: var(--muted);
+  margin: 0.7rem 0 0;
+}
+
+@media (max-width: 740px) {
+  main.page {
+    padding: 1.25rem 0.8rem 3rem;
+  }
+
+  .meal-group li {
+    grid-template-columns: 1fr;
+  }
+
+  .entry-nutrition {
+    justify-content: flex-start;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
