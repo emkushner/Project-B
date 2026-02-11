@@ -107,6 +107,11 @@ h1 {
   margin: 0.45rem 0 0.85rem;
 }
 
+.error {
+  color: #9f1d1d;
+  margin: 0.45rem 0 0;
+}
+
 .quick-list {
   display: grid;
   gap: 0.5rem;
@@ -132,6 +137,11 @@ h1 {
 
 .quick-item small {
   color: var(--muted);
+}
+
+.quick-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .form {

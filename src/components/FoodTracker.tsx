@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { mealTypes, quickFoods } from "@/lib/foodData";
 import type { FoodEntry, MealType, NutritionTotals } from "@/lib/types";
-
-const storageKey = "food-tracker-entries";
+import type { NewFoodEntry } from "@/lib/foodEntries";
 
 const emptyTotals: NutritionTotals = {
   calories: 0,
@@ -51,43 +50,58 @@ function dateLabel(input: string): string {
   }).format(new Date(input));
 }
 
-function uid(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
+async function parseApiError(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as { error?: string };
+    return body.error ?? `Request failed (${response.status})`;
+  } catch {
+    return `Request failed (${response.status})`;
   }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 export default function FoodTracker() {
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [form, setForm] = useState<FormState>(defaultForm);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as FoodEntry[];
-        if (Array.isArray(parsed)) {
-          setEntries(parsed);
+    async function loadEntries() {
+      setError(null);
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("/api/foods", { cache: "no-store" });
+        if (!response.ok) {
+          setError(await parseApiError(response));
+          setEntries([]);
+          return;
         }
+
+        const body = (await response.json()) as { entries: FoodEntry[] };
+        setEntries(Array.isArray(body.entries) ? body.entries : []);
+      } catch {
+        setError("Unable to connect to the server.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      setEntries([]);
     }
+
+    void loadEntries();
   }, []);
 
-  useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(entries));
-  }, [entries]);
-
   const totals = useMemo<NutritionTotals>(() => {
-    return entries.reduce((acc, item) => {
-      acc.calories += item.calories;
-      acc.protein += item.protein;
-      acc.carbs += item.carbs;
-      acc.fat += item.fat;
-      return acc;
-    }, { ...emptyTotals });
+    return entries.reduce(
+      (acc, item) => {
+        acc.calories += item.calories;
+        acc.protein += item.protein;
+        acc.carbs += item.carbs;
+        acc.fat += item.fat;
+        return acc;
+      },
+      { ...emptyTotals }
+    );
   }, [entries]);
 
   const grouped = useMemo(() => {
@@ -101,24 +115,76 @@ export default function FoodTracker() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function addEntry(entry: Omit<FoodEntry, "id" | "createdAt">) {
-    const next: FoodEntry = {
-      ...entry,
-      id: uid(),
-      createdAt: new Date().toISOString()
-    };
+  async function addEntry(entry: NewFoodEntry) {
+    setError(null);
+    setIsSubmitting(true);
 
-    setEntries((prev) => [next, ...prev]);
+    try {
+      const response = await fetch("/api/foods", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(entry)
+      });
+
+      if (!response.ok) {
+        setError(await parseApiError(response));
+        return;
+      }
+
+      const body = (await response.json()) as { entry: FoodEntry };
+      if (body.entry) {
+        setEntries((prev) => [body.entry, ...prev]);
+      }
+    } catch {
+      setError("Unable to save food entry.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function submitCustomFood(event: React.FormEvent<HTMLFormElement>) {
+  async function removeEntry(id: string) {
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/foods/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        setError(await parseApiError(response));
+        return;
+      }
+
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+    } catch {
+      setError("Unable to remove this entry.");
+    }
+  }
+
+  async function clearEntries() {
+    setError(null);
+
+    try {
+      const response = await fetch("/api/foods", { method: "DELETE" });
+      if (!response.ok) {
+        setError(await parseApiError(response));
+        return;
+      }
+
+      setEntries([]);
+    } catch {
+      setError("Unable to clear entries.");
+    }
+  }
+
+  async function submitCustomFood(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     const trimmedName = form.name.trim();
     if (!trimmedName) {
       return;
     }
 
-    addEntry({
+    await addEntry({
       name: trimmedName,
       meal: form.meal,
       serving: form.serving.trim() || "1 serving",
@@ -137,6 +203,8 @@ export default function FoodTracker() {
         <p className="eyebrow">Daily Nutrition</p>
         <h1>Food Tracker</h1>
         <p className="subtitle">Log meals fast, keep calories and macros visible all day.</p>
+        {isLoading && <p className="muted">Loading entries...</p>}
+        {error && <p className="error">{error}</p>}
       </section>
 
       <section className="grid stats">
@@ -168,7 +236,8 @@ export default function FoodTracker() {
                 key={food.name}
                 type="button"
                 className="quick-item"
-                onClick={() => addEntry(food)}
+                disabled={isSubmitting}
+                onClick={() => void addEntry(food)}
               >
                 <span>
                   <strong>{food.name}</strong>
@@ -251,8 +320,8 @@ export default function FoodTracker() {
                 />
               </label>
             </div>
-            <button className="primary" type="submit">
-              Add Food
+            <button className="primary" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Add Food"}
             </button>
           </form>
         </article>
@@ -261,12 +330,12 @@ export default function FoodTracker() {
       <section className="panel entries">
         <div className="entries-head">
           <h2>Today&apos;s Entries</h2>
-          <button type="button" className="ghost" onClick={() => setEntries([])} disabled={!entries.length}>
+          <button type="button" className="ghost" onClick={() => void clearEntries()} disabled={!entries.length}>
             Clear Day
           </button>
         </div>
 
-        {entries.length === 0 && <p className="empty">No foods logged yet.</p>}
+        {entries.length === 0 && !isLoading && <p className="empty">No foods logged yet.</p>}
 
         {grouped.map(({ meal, items }) => (
           <div key={meal} className="meal-group">
@@ -291,7 +360,7 @@ export default function FoodTracker() {
                       <span>C {item.carbs}g</span>
                       <span>F {item.fat}g</span>
                     </div>
-                    <button type="button" onClick={() => setEntries((prev) => prev.filter((e) => e.id !== item.id))}>
+                    <button type="button" onClick={() => void removeEntry(item.id)}>
                       Remove
                     </button>
                   </li>
